@@ -24,6 +24,10 @@ body > canvas {
   &[data-video="smile"] {
     background-color: #b90000;
   }
+
+  &[data-video="kiswe"] {
+    background-image: linear-gradient(90deg, #ac48e7, #d8478c 54%, #ff200d);
+  }
 }
 
 body > nav {

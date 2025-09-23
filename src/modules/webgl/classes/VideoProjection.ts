@@ -14,7 +14,7 @@ export default class VideoProjection extends CanvasModel {
   private duration: number = 1
   private imgData: ImageDataArray = new Uint8ClampedArray(0)
   private DOM = {
-    $btns: document.querySelectorAll('body > nav > button') as NodeListOf<HTMLButtonElement>,
+    $buttons: document.querySelector('nav.buttons') as HTMLElement,
     $canvas: document.querySelector('#canvas') as HTMLCanvasElement
   }
   private grid: Record<string, number> = {
@@ -28,6 +28,8 @@ export default class VideoProjection extends CanvasModel {
     for (const [index, config] of CONFIG.items.entries()) {
       this.createMask(config, index)
     }
+
+    this.DOM.$buttons.addEventListener('click', this.onClick.bind(this))
   }
 
   private createVideoTexture (config: ProjectionItem, index: number) {
@@ -111,7 +113,7 @@ export default class VideoProjection extends CanvasModel {
     this.group.add(gridGroup)
     this.isReady = true
 
-    this.initInteractions()
+    this.initInteractions(config, index)
   }
 
   private createMask (config: ProjectionItem, index: number) {
@@ -148,27 +150,25 @@ export default class VideoProjection extends CanvasModel {
     maskImage.src = config.mask
   }
 
-  private initInteractions () {    
+  private initInteractions (config: ProjectionItem, index: number) {    
     for (const grid of this.group.children) {
       if (grid.name === this.currGrid) continue
-      grid.children.forEach(mesh => mesh.scale.setScalar(0))
+      grid.children.forEach((mesh) => mesh.scale.setScalar(0))
     }
-    
-    this.DOM.$btns.forEach(($btn, index) => $btn.addEventListener('click', () => this.bindEvent($btn, index)))
+
+    const btn = document.createElement('button')
+    btn.dataset.id = config.id
+    btn.textContent = config.id
+    this.DOM.$buttons.appendChild(btn)
   }
 
-  bindEvent ($btn: HTMLButtonElement, index: number) {
+  onClick (e: MouseEvent) {
+    const btn = e.target as HTMLButtonElement|null
+    if (!(btn instanceof HTMLButtonElement)) return
     if (this.isAnimating) return
     this.isAnimating = true
-    this.DOM.$btns.forEach(($btn, btnIndex) => {
-      if (btnIndex === index) {
-        $btn.classList.add('active')
-      } else {
-        $btn.classList.remove('active')
-      }
-    })
     this.prevGrid = this.currGrid
-    this.currGrid = `${$btn.dataset.id}`
+    this.currGrid = `${btn.dataset.id}`
     this.revealGrid()
     this.hideGrid()
   }

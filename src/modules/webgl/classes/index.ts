@@ -5,5 +5,5 @@ import VideoProjection from './VideoProjection'
 export {
   CanvasApp,
   CanvasModel,
-  VideoProjection
+  VideoProjection,
 }

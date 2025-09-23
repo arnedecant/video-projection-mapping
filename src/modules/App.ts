@@ -1,5 +1,9 @@
-export default class App {
-  constructor () {
+import AppGL from './webgl/AppGL'
 
+export default class App {
+  private appGl = new AppGL()
+
+  constructor () {
+    
   }
 }

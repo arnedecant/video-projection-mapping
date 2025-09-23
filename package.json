@@ -12,6 +12,7 @@
     "format": "prettier . --write"
   },
   "dependencies": {
+    "@three-ts/orbit-controls": "^1.4.7",
     "three": "^0.168.0"
   },
   "devDependencies": {
@@ -27,8 +28,7 @@
     "prettier": "^3.3.3",
     "sass": "^1.79.4",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8",
-    "vite-plugin-checker": "^0.7.2"
+    "vite": "^5.4.8"
   },
   "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
 }

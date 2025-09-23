@@ -1,0 +1,14 @@
+@use './reset.scss';
+@use './variables.scss';
+
+body {
+  height: 100dvh;
+  width: 100dvw;
+  background-color: var(--c-background);
+}
+
+body > canvas {
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+}

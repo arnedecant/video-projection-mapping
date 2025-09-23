@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import checker from 'vite-plugin-checker'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -21,12 +20,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src')
     }
   },
-  plugins: [
-    checker({
-      typescript: true,
-      eslint: { lintCommand: 'eslint . --ext .ts,.tsx' }
-    })
-  ],
+  // plugins: [
+  //   checker({
+  //     typescript: true,
+  //     eslint: { lintCommand: 'eslint . --ext .ts,.tsx' }
+  //   })
+  // ],
   css: {
     preprocessorOptions: {
       scss: {

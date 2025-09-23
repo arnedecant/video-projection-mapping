@@ -61,7 +61,7 @@ export default class VideoProjection extends CanvasModel {
       for (let y = 0; y < CONFIG.size; y++) {
         const cubeW = 0.5
         const cubeH = 0.5
-        const geometry = new BoxGeometry(cubeW, cubeH, 0.5)
+        const geometry = new BoxGeometry(cubeW, cubeH, 0.2)
   
         // mask sampling (black = keep, white = skip)
         const flippedY = this.grid.height - 1 - y

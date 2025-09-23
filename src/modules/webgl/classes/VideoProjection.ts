@@ -56,65 +56,60 @@ export default class VideoProjection extends CanvasModel {
   private createGrid (config: ProjectionItem, index: number): void {
     this.createVideoTexture(config, index)
     const gridGroup = new Group()
-
+  
     for (let x = 0; x < CONFIG.size; x++) {
       for (let y = 0; y < CONFIG.size; y++) {
-        const geometry = new BoxGeometry(0.5, 0.5, 0.5)
-
-        // Get pixel color from mask (sample at grid position)
-        // Flip Y coordinate to match image orientation
+        const cubeW = 0.5
+        const cubeH = 0.5
+        const geometry = new BoxGeometry(cubeW, cubeH, 0.5)
+  
+        // mask sampling (black = keep, white = skip)
         const flippedY = this.grid.height - 1 - y
         const pixelIndex = (flippedY * this.grid.width + x) * 4
         const r = this.imgData[pixelIndex]
         const g = this.imgData[pixelIndex + 1]
         const b = this.imgData[pixelIndex + 2]
-
-        // Calculate brightness (0 = black, 255 = white)
         const brightness = (r + g + b) / 3
-
-        // Only create box if pixel is dark (black shows, white hides)
-        if (brightness >= 128) continue // Threshold for black vs white
-
-        // Create individual geometry for each box to have unique UV mapping
-        // Calculate UV coordinates for this specific box
-        const uvX = x / CONFIG.size
-        const uvY = y / CONFIG.size // Remove the flip to match correct orientation
-        const uvWidth = 1 / CONFIG.size
-        const uvHeight = 1 / CONFIG.size
-        
-        // Get the UV attribute
+        if (brightness >= 128) continue
+  
+        // UV packing that includes physical gaps
+        const gapX = Math.max(CONFIG.spacing - cubeW, 0)
+        const gapY = Math.max(CONFIG.spacing - cubeH, 0)
+        const totalW = CONFIG.size * cubeW + (CONFIG.size - 1) * gapX
+        const totalH = CONFIG.size * cubeH + (CONFIG.size - 1) * gapY
+        const startX = x * (cubeW + gapX)
+        const startY = y * (cubeH + gapY)
+        const uvX = startX / totalW
+        const uvY = startY / totalH
+        const uvWidth = cubeW / totalW
+        const uvHeight = cubeH / totalH
+  
         const uvAttribute = geometry.attributes.uv
-        const uvArray = uvAttribute.array
-        
-        // Map each face of the box to show the same portion of video
-        // We'll focus on the front face (face 4) for the main projection
+        const uvArray = uvAttribute.array as Float32Array
         for (let i = 0; i < uvArray.length; i += 2) {
-          // Map all faces to the same UV region for consistency
-          uvArray[i] = uvX + (uvArray[i] * uvWidth)     // U coordinate
-          uvArray[i + 1] = uvY + (uvArray[i + 1] * uvHeight) // V coordinate
+          uvArray[i] = uvX + uvArray[i] * uvWidth
+          uvArray[i + 1] = uvY + uvArray[i + 1] * uvHeight
         }
-        
-        // Mark the attribute as needing update
         uvAttribute.needsUpdate = true
-        
+  
         const mesh = new Mesh(geometry, this.material)
-
         mesh.position.x = (x - (CONFIG.size - 1) / 2) * CONFIG.spacing
         mesh.position.y = (y - (CONFIG.size - 1) / 2) * CONFIG.spacing
         mesh.position.z = 0
-
+  
         gridGroup.add(mesh)
       }
     }
-    
+  
     gridGroup.name = config.id
     gridGroup.scale.setScalar(0.5)
-
+  
     this.group.add(gridGroup)
     this.isReady = true
-
+  
     this.initInteractions(config, index)
   }
+  
 
   private createMask (config: ProjectionItem, index: number) {
     // Create a canvas to read mask pixel data

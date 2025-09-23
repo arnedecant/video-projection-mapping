@@ -1,9 +1,9 @@
 import { AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import { OrbitControls } from '@three-ts/orbit-controls'
-import Models from './Models'
+import { CanvasModel } from '.'
 
-export default class AppGL {
-  public models: Models
+export default class CanvasApp {
+  public models: CanvasModel[] = []
   public canvas: HTMLCanvasElement
   public renderer: WebGLRenderer
   public scene: Scene
@@ -18,8 +18,8 @@ export default class AppGL {
 
   private _rafId = 0
 
-  constructor() {
-    this.canvas = document.querySelector('canvas#canvas') as HTMLCanvasElement
+  constructor (selector: string = '#canvas') {
+    this.canvas = document.querySelector(selector) as HTMLCanvasElement
 
     // Renderer
     this.renderer = new WebGLRenderer({
@@ -46,9 +46,6 @@ export default class AppGL {
     // Lights
     this.lights.directional.position.set(5, 5, 5)
     this.scene.add(this.lights.directional, this.lights.ambient)
-
-    // Content
-    this.models = new Models(this)
 
     // Start loop (no window 'resize' listener needed)
     this.loop = this.loop.bind(this)
@@ -80,10 +77,15 @@ export default class AppGL {
     }
   }
 
+  public addModel (model: CanvasModel) {
+    this.models.push(model)
+  }
+
   public loop (): void {
     this._rafId = requestAnimationFrame(this.loop)
     this.resizeIfNeeded()
     this.controls.update()
+    this.models.forEach((model) => model.update())
     this.renderer.render(this.scene, this.camera)
   }
 

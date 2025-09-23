@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@three-ts/orbit-controls": "^1.4.7",
+    "gsap": "^3.13.0",
     "three": "^0.168.0"
   },
   "devDependencies": {

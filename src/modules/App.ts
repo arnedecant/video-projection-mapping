@@ -1,9 +1,9 @@
-import AppGL from './webgl/AppGL'
+import { CanvasApp, VideoProjection } from './webgl/classes'
 
 export default class App {
-  private appGl = new AppGL()
+  private canvasApp = new CanvasApp()
 
   constructor () {
-    
+    this.canvasApp.addModel(new VideoProjection(this.canvasApp))
   }
 }

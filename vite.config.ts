@@ -9,6 +9,7 @@ export default defineConfig({
   root: 'src',
   publicDir: '../public',
   server: { open: true },
+  base: process.env.DEPLOY_BASE ?? '/video-projection-mapping/',
   build: {
     outDir: '../dist',
     emptyOutDir: true,

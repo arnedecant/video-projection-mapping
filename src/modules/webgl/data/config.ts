@@ -11,6 +11,11 @@ import { ProjectionConfig } from '@/modules/webgl/types'
 const CONFIG: ProjectionConfig = {
   size: 21,
   spacing: 0.75,
+  cubeW: 0.5,
+  cubeH: 0.5,
+  elevation: 1.5,
+  elevationStep: 0.8,
+  elevationMargin: 0.5, // margin between pointer <=> grid
   items: [
     {
       id: 'heart',

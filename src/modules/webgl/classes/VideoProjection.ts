@@ -1,26 +1,12 @@
 import {
-  BoxGeometry,
-  ClampToEdgeWrapping,
-  FrontSide,
-  Group,
-  LinearFilter,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  Raycaster,
-  SRGBColorSpace,
-  Vector2,
-  Vector3,
-  Matrix4,
-  Ray,
-  VideoTexture
+  BoxGeometry, ClampToEdgeWrapping, FrontSide, Group, LinearFilter, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  Raycaster, SRGBColorSpace, Vector2, Vector3, Matrix4, Ray, VideoTexture
 } from 'three'
-
+import gsap from 'gsap'
 import { CanvasApp, CanvasModel } from '.'
 import CONFIG from '@/modules/webgl/data/config'
 import { ProjectionItem } from '@/modules/webgl/types'
-import gsap from 'gsap'
-import { clamp } from '@/modules/common/utils/math'
+import { clamp } from '@/modules/common/utils'
 
 type ImageDataArray = Uint8ClampedArray
 
@@ -44,7 +30,7 @@ export default class VideoProjection extends CanvasModel {
   private mouse = new Vector2()
   private hoverIdx: { x: number, y: number } | null = null
   private lastAffected: Set<string> = new Set()
-  private elevation = { self: 4, ring1: 2, ring2: 1 }
+  private elevation: Record<string, number> = {}
   private meshLookupByGrid: Map<string, Map<string, Mesh>> = new Map()
 
   // grid bounds (in grid local space, before parent scale)
@@ -61,6 +47,12 @@ export default class VideoProjection extends CanvasModel {
     super(app)
     this.app = app
     this.app.scene.add(this.group)
+
+    this.elevation = {
+      self: CONFIG.elevation,
+      ring1: CONFIG.elevation * CONFIG.elevationStep,
+      ring2: CONFIG.elevation * Math.pow(CONFIG.elevationStep, 4)
+    }
 
     for (const [index, config] of CONFIG.items.entries()) {
       this.createMask(config, index)
@@ -133,12 +125,10 @@ export default class VideoProjection extends CanvasModel {
     this.createVideoTexture(config, index)
     const gridGroup = new Group()
 
-    const cubeW = 0.5
-    const cubeH = 0.5
-    const gapX = Math.max(CONFIG.spacing - cubeW, 0)
-    const gapY = Math.max(CONFIG.spacing - cubeH, 0)
-    const totalW = CONFIG.size * cubeW + (CONFIG.size - 1) * gapX
-    const totalH = CONFIG.size * cubeH + (CONFIG.size - 1) * gapY
+    const gapX = Math.max(CONFIG.spacing - CONFIG.cubeW, 0)
+    const gapY = Math.max(CONFIG.spacing - CONFIG.cubeH, 0)
+    const totalW = CONFIG.size * CONFIG.cubeW + (CONFIG.size - 1) * gapX
+    const totalH = CONFIG.size * CONFIG.cubeH + (CONFIG.size - 1) * gapY
 
     const gridLookup = new Map<string, Mesh>()
     this.meshLookupByGrid.set(config.id, gridLookup)
@@ -156,17 +146,17 @@ export default class VideoProjection extends CanvasModel {
         const brightness = (r + g + b) / 3
         if (brightness >= 128) continue
 
-        const geometry = new BoxGeometry(cubeW, cubeH, 0.5)
+        const geometry = new BoxGeometry(CONFIG.cubeW, CONFIG.cubeH, 0.5)
 
         // start position in world span that includes gaps
-        const startX = x * (cubeW + gapX)
-        const startY = y * (cubeH + gapY)
+        const startX = x * (CONFIG.cubeW + gapX)
+        const startY = y * (CONFIG.cubeH + gapY)
 
         // normalized UV rectangle for this cube
         let uvX = startX / totalW
         let uvY = startY / totalH
-        let uvWidth = cubeW / totalW
-        let uvHeight = cubeH / totalH
+        let uvWidth = CONFIG.cubeW / totalW
+        let uvHeight = CONFIG.cubeH / totalH
 
         const uvAttribute = geometry.attributes.uv
         const a = uvAttribute.array as Float32Array
@@ -307,12 +297,11 @@ export default class VideoProjection extends CanvasModel {
     // threshold: only react if the pointer is within a cube's distance (0.5)
     const bounds = this.gridBounds.get(this.currGrid)
     if (!bounds) return
-    const margin = 0.5 // cubeW
     if (
-      local.x < bounds.minX - margin ||
-      local.x > bounds.maxX + margin ||
-      local.y < bounds.minY - margin ||
-      local.y > bounds.maxY + margin
+      local.x < bounds.minX - CONFIG.elevationMargin ||
+      local.x > bounds.maxX + CONFIG.elevationMargin ||
+      local.y < bounds.minY - CONFIG.elevationMargin ||
+      local.y > bounds.maxY + CONFIG.elevationMargin
     ) {
       if (this.hoverIdx) this.resetLastAffected()
       this.hoverIdx = null
@@ -415,12 +404,10 @@ export default class VideoProjection extends CanvasModel {
 
   public setSpacing (s: number) {
     CONFIG.spacing = s
-    const cubeW = 0.5
-    const cubeH = 0.5
-    const gapX = Math.max(CONFIG.spacing - cubeW, 0)
-    const gapY = Math.max(CONFIG.spacing - cubeH, 0)
-    const totalW = CONFIG.size * cubeW + (CONFIG.size - 1) * gapX
-    const totalH = CONFIG.size * cubeH + (CONFIG.size - 1) * gapY
+    const gapX = Math.max(CONFIG.spacing - CONFIG.cubeW, 0)
+    const gapY = Math.max(CONFIG.spacing - CONFIG.cubeH, 0)
+    const totalW = CONFIG.size * CONFIG.cubeW + (CONFIG.size - 1) * gapX
+    const totalH = CONFIG.size * CONFIG.cubeH + (CONFIG.size - 1) * gapY
 
     for (const grid of this.group.children as Group[]) {
       // update cached bounds for each grid id
@@ -435,12 +422,12 @@ export default class VideoProjection extends CanvasModel {
         )
 
         // recompute UVs to keep gaps respected after spacing change
-        const startX = x * (cubeW + gapX)
-        const startY = y * (cubeH + gapY)
+        const startX = x * (CONFIG.cubeW + gapX)
+        const startY = y * (CONFIG.cubeH + gapY)
         let uvX = startX / totalW
         let uvY = startY / totalH
-        let uvWidth = cubeW / totalW
-        let uvHeight = cubeH / totalH
+        let uvWidth = CONFIG.cubeW / totalW
+        let uvHeight = CONFIG.cubeH / totalH
 
         const uv = (mesh.geometry as BoxGeometry).attributes.uv
         const arr = uv.array as Float32Array

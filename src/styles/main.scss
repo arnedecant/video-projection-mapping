@@ -11,22 +11,22 @@ body > canvas {
   height: 100%;
   width: 100%;
   background-color: transparent;
-  transition: background-color 0.5s ease;
+  transition: background 0.5s ease;
 
   &[data-video="heart"] {
-    background-color: #e19800;
+    background: linear-gradient(90deg, #f7ea60, #3cf2de 54%, #f774bb);
   }
   
   &[data-video="drop"] {
-    background-color: #00a00b
+    background: linear-gradient(90deg, #8711c1, #2472fc);
   }
   
   &[data-video="smile"] {
-    background-color: #b90000;
+    background: linear-gradient(90deg, #1dbde6, #f1515e);
   }
 
   &[data-video="kiswe"] {
-    background-image: linear-gradient(90deg, #ac48e7, #d8478c 54%, #ff200d);
+    background: linear-gradient(90deg, #ac48e7, #d8478c 54%, #ff200d);
   }
 }
 

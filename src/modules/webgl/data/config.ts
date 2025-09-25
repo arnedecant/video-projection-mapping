@@ -1,35 +1,33 @@
-import imgHeart from '@/assets/heart.jpg'
-import imgDrop from '@/assets/codrops.jpg'
-import imgSmile from '@/assets/smile.jpg'
-import imgKiswe from '@/assets/kiswe.jpg'
-import vidConcert from '@/assets/concert.mp4'
-import vidCrowd from '@/assets/crowd.mp4'
-import vidFuture from '@/assets/future.mp4'
-import vidKisweSizzle from '@/assets/kiswe-sizzle.mp4'
+import {
+  imgHeart, imgDrop, imgSmile, imgKiswe, imgLungs, vidConcert, vidCrowd, vidFuture, svgYinYang, svgLungs, svgHeart, imgYinYang
+} from './assets'
 import { ProjectionConfig } from '@/modules/webgl/types'
 
 const CONFIG: ProjectionConfig = {
   size: 21,
-  spacing: 0.75,
+  spacing: 0.6,
   cubeW: 0.5,
   cubeH: 0.5,
   elevation: 2,
   elevationStep: 0.8,
-  elevationMargin: 0.5, // margin between pointer <=> grid
+  elevationMargin: 0.5, // margin between pointer <=> grid interaction
   items: [
     {
       id: 'heart',
+      icon: svgHeart,
       mask: imgHeart,
       video: vidConcert
     },
     {
-      id: 'drop',
-      mask: imgDrop,
+      id: 'lungs',
+      icon: svgLungs,
+      mask: imgLungs,
       video: vidCrowd
     },
     {
-      id: 'smile',
-      mask: imgSmile,
+      id: 'yin-yang',
+      icon: svgYinYang,
+      mask: imgYinYang,
       video: vidFuture
     },
     // {

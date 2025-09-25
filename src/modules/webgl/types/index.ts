@@ -11,6 +11,7 @@ export interface ProjectionConfig {
 
 export interface ProjectionItem {
   id: string,
+  icon: string,
   mask: string,
   video: string
 }

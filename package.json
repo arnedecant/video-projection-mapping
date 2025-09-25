@@ -12,7 +12,8 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier . --write",
     "deploy": "gh-pages -d dist -b gh-pages",
-    "deploy:clean": "gh-pages -d dist -b gh-pages -x"
+    "deploy:clean": "gh-pages -d dist -b gh-pages -x",
+    "deploy:build": "tsc -b && vite build --base=/video-projection-mapping/ && gh-pages -d dist -b gh-pages -x"
   },
   "dependencies": {
     "@three-ts/orbit-controls": "^1.4.7",

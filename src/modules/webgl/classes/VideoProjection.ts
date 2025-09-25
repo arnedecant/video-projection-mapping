@@ -17,6 +17,7 @@ export default class VideoProjection extends CanvasModel {
   private duration: number = 1
   private imgData: ImageDataArray = new Uint8ClampedArray(0)
   private DOM = {
+    $body: document.querySelector('body') as HTMLBodyElement,
     $buttons: document.querySelector('nav.buttons') as HTMLElement,
     $canvas: document.querySelector('#canvas') as HTMLCanvasElement
   }
@@ -57,6 +58,8 @@ export default class VideoProjection extends CanvasModel {
     for (const [index, config] of CONFIG.items.entries()) {
       this.createMask(config, index)
     }
+
+    this.DOM.$body.style.setProperty('--total', String(CONFIG.items.length))
 
     this.DOM.$buttons.addEventListener('click', this.onClick.bind(this))
     this.DOM.$canvas.addEventListener('mousemove', this.onPointerMove.bind(this))
@@ -234,16 +237,25 @@ export default class VideoProjection extends CanvasModel {
     this.DOM.$buttons.appendChild(btn)
   }
 
-  private onClick (e: MouseEvent) {
-    const btn = e.target as HTMLButtonElement | null
-    if (!(btn instanceof HTMLButtonElement)) return
+  private onClick(e: MouseEvent) {
     if (this.isAnimating) return
+    const target = e.target as Element | null
+    const btn = target?.closest('button')
+    if (!btn || !this.DOM.$buttons.contains(btn)) return  
+    const buttons = Array.from(this.DOM.$buttons.querySelectorAll<HTMLButtonElement>(':scope > button'))
+    const idx = buttons.indexOf(btn)
+    if (idx < 0) return
+
+    this.DOM.$body.style.setProperty('--index', String(idx))
+    this.DOM.$body.style.setProperty('--id', btn.dataset.id ?? '')
+    this.DOM.$body.dataset.id = btn.dataset.id
     this.isAnimating = true
     this.prevGrid = this.currGrid
-    this.currGrid = `${btn.dataset.id}`
+    this.currGrid = String(btn.dataset.id)
     this.revealGrid()
     this.hideGrid()
   }
+  
 
   private revealGrid () {
     const grid = this.group.children.find((item) => item.name === this.currGrid) as Group | undefined
@@ -391,7 +403,7 @@ export default class VideoProjection extends CanvasModel {
     if (!lookup) return
     for (const key of this.lastAffected) {
       const m = lookup.get(key)
-      if (m) this.animateZ(m, (m.userData?.baseZ ?? 0))
+      if (m) this.animateZ(m, m.userData?.baseZ ?? 0)
     }
     this.lastAffected.clear()
   }

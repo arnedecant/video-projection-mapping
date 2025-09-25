@@ -2,39 +2,52 @@
 @use './variables.scss';
 
 body {
+  --index: 0;
+  --total: 1;
+  --id: '';
+
   height: 100dvh;
   width: 100dvw;
-  background-color: var(--c-background);
+  // background-color: var(--c-background);
+  position: relative;
+
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: calc(var(--total) * 100dvw);
+    height: 100dvh;
+    transform: translateX(calc(var(--index) * -100dvw));
+    transition: transform 0.3s ease;
+    background: linear-gradient(
+      -60deg, 
+      #f7ea60, 
+      #3cf2de, 
+      #f774bb,
+      #8711c1, 
+      // #2472fc,
+      // #ac48e7,
+      // #d8478c,
+      // #ff200d 
+    );
+  }
 }
 
 body > canvas {
   height: 100%;
   width: 100%;
   background-color: transparent;
-  transition: background 0.5s ease;
+}
 
-  &[data-video="heart"] {
-    background: linear-gradient(90deg, #f7ea60, #3cf2de 54%, #f774bb);
-  }
-  
-  &[data-video="drop"],
-  &[data-video="home"],
-  &[data-video="yin-yang"], {
-    background: linear-gradient(90deg, #8711c1, #2472fc);
-  }
-  
-  &[data-video="smile"],
-  &[data-video="lungs"] {
-    background: linear-gradient(90deg, #1dbde6, #f1515e);
-  }
-
-  &[data-video="kiswe"] {
-    background: linear-gradient(90deg, #ac48e7, #d8478c 54%, #ff200d);
-  }
+body[data-id="kiswe"] > canvas {
+  background: linear-gradient(90deg, #ac48e7, #d8478c 54%, #ff200d);
 }
 
 body > nav {
-  --size: 5rem;
+  --size: 4rem;
   position: fixed;
   bottom: 1rem;
   display: flex;
@@ -51,7 +64,7 @@ body > nav {
     border-radius: 50%;
     width: var(--size);
     height: var(--size);
-    background-color: var(--c-background);
+    border: 2px solid var(--c-background);
     transition: transform 0.2s ease;
     pointer-events: all;
     cursor: pointer;
@@ -72,6 +85,6 @@ body > nav {
   svg {
     width: 65%;
     pointer-events: none;
-    fill: #EEE;
+    fill: var(--c-background);
   }
 }

@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# root/scripts/generate_masks.py
-# Convert /src/assets/icons/*.svg to 1080x1080 JPGs in /src/assets/masks with white background.
 
 import io
 import sys
@@ -15,7 +13,6 @@ except Exception:
 SIZE = 1080
 BG = (255, 255, 255)
 
-# Resolve project root assuming this file lives at /root/scripts/generate_masks.py
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "src" / "assets" / "icons"
 OUTPUT_DIR = PROJECT_ROOT / "src" / "assets" / "masks"

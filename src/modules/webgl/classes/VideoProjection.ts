@@ -5,8 +5,9 @@ import {
 import gsap from 'gsap'
 import { CanvasApp, CanvasModel } from '.'
 import { CONFIG } from '@/modules/webgl/data'
-import { ProjectionItem } from '@/modules/webgl/types'
+import { Bounds, ProjectionItem } from '@/modules/webgl/types'
 import { clamp } from '@/modules/common/utils'
+import { addRing, animateGridIn, animateGridOut, animateZ, findNearestExistingMesh, getKey, getMaterialFromVideo, isWithinBounds } from '../utils'
 
 type ImageDataArray = Uint8ClampedArray
 
@@ -35,7 +36,7 @@ export default class VideoProjection extends CanvasModel {
   private meshLookupByGrid: Map<string, Map<string, Mesh>> = new Map()
 
   // grid bounds (in grid local space, before parent scale)
-  private gridBounds: Map<string, { minX: number, maxX: number, minY: number, maxY: number }> = new Map()
+  private gridBounds: Map<string, Bounds> = new Map()
 
   // local-plane intersection temps
   private _inv = new Matrix4()
@@ -60,7 +61,6 @@ export default class VideoProjection extends CanvasModel {
     }
 
     this.DOM.$body.style.setProperty('--total', String(CONFIG.items.length))
-
     this.DOM.$buttons.addEventListener('click', this.onClick.bind(this))
     this.DOM.$canvas.addEventListener('mousemove', this.onPointerMove.bind(this))
     this.DOM.$canvas.addEventListener('mouseleave', this.onPointerLeave.bind(this))
@@ -68,10 +68,8 @@ export default class VideoProjection extends CanvasModel {
 
   // ————————————————————————————————————————————————————————————————————————
   // Helpers
-  private key (x: number, y: number) { return `${x},${y}` }
-
   private getCurrentGrid (): Group | undefined {
-    return this.group.children.find(g => g.name === this.currGrid) as Group | undefined
+    return this.group.children.find((g) => g.name === this.currGrid) as Group | undefined
   }
 
   private intersectGridLocal (grid: Group): Vector3 | null {
@@ -99,33 +97,9 @@ export default class VideoProjection extends CanvasModel {
   }
 
   // ————————————————————————————————————————————————————————————————————————
-  // Video / Material
-  private createVideoTexture (config: ProjectionItem, _index: number) {
-    const $video = document.createElement('video')
-    $video.src = config.video
-    $video.crossOrigin = 'anonymous'
-    $video.loop = true
-    $video.muted = true
-    $video.playsInline = true
-    $video.play()
-
-    const videoTexture = new VideoTexture($video)
-    videoTexture.minFilter = LinearFilter
-    videoTexture.magFilter = LinearFilter
-    videoTexture.colorSpace = SRGBColorSpace
-    videoTexture.wrapS = ClampToEdgeWrapping
-    videoTexture.wrapT = ClampToEdgeWrapping
-
-    this.material = new MeshBasicMaterial({
-      map: videoTexture,
-      side: FrontSide
-    })
-  }
-
-  // ————————————————————————————————————————————————————————————————————————
   // Grid creation with UVs that include gaps
   private createGrid (config: ProjectionItem, index: number): void {
-    this.createVideoTexture(config, index)
+    this.material = getMaterialFromVideo(config)
     const gridGroup = new Group()
 
     const gapX = Math.max(CONFIG.spacing - CONFIG.cubeW, 0)
@@ -156,10 +130,10 @@ export default class VideoProjection extends CanvasModel {
         const startY = y * (CONFIG.cubeH + gapY)
 
         // normalized UV rectangle for this cube
-        let uvX = startX / totalW
-        let uvY = startY / totalH
-        let uvWidth = CONFIG.cubeW / totalW
-        let uvHeight = CONFIG.cubeH / totalH
+        const uvX = startX / totalW
+        const uvY = startY / totalH
+        const uvWidth = CONFIG.cubeW / totalW
+        const uvHeight = CONFIG.cubeH / totalH
 
         const uvAttribute = geometry.attributes.uv
         const a = uvAttribute.array as Float32Array
@@ -175,7 +149,8 @@ export default class VideoProjection extends CanvasModel {
         mesh.position.z = 0
         mesh.userData = { x, y, baseZ: 0 }
 
-        gridLookup.set(this.key(x, y), mesh)
+        const key = getKey(x, y)
+        gridLookup.set(key, mesh)
         gridGroup.add(mesh)
       }
     }
@@ -188,7 +163,6 @@ export default class VideoProjection extends CanvasModel {
 
     // cache bounds for threshold checks
     this.computeGridBounds(config.id)
-
     this.initInteractions(config, index)
   }
 
@@ -252,41 +226,8 @@ export default class VideoProjection extends CanvasModel {
     this.isAnimating = true
     this.prevGrid = this.currGrid
     this.currGrid = String(btn.dataset.id)
-    this.revealGrid()
-    this.hideGrid()
-  }
-  
-
-  private revealGrid () {
-    const grid = this.group.children.find((item) => item.name === this.currGrid) as Group | undefined
-    this.DOM.$canvas.dataset.video = this.currGrid
-    const tl = gsap.timeline({ delay: this.duration * 0.25, defaults: { ease: 'power1.out', duration: this.duration } })
-
-    for (const [index, child] of (grid?.children.entries() ?? [])) {
-      const mesh = child as Mesh
-      tl.to(mesh.scale, { x: 1, y: 1, z: 1, ease: 'power3.inOut' }, index * 0.001)
-        .to(mesh.position, { z: 0 }, '<')
-    }
-  }
-
-  private hideGrid () {
-    const grid = this.group.children.find(item => item.name === this.prevGrid) as Group | undefined
-    const tl = gsap.timeline({
-      defaults: { ease: 'power1.out', duration: this.duration },
-      onComplete: () => { this.isAnimating = false }
-    })
-
-    for (const [index, child] of (grid?.children.entries() ?? [])) {
-      const mesh = child as Mesh
-      tl.to(mesh.scale, { x: 0, y: 0, z: 0, ease: 'power3.inOut' }, index * 0.001)
-        .to(mesh.position, {
-          z: 6,
-          onComplete: () => {
-            gsap.set(mesh.scale, { x: 0, y: 0, z: 0 })
-            gsap.set(mesh.position, { z: -6 })
-          }
-        }, '<')
-    }
+    animateGridIn(this.group, this.currGrid, this.duration, this.DOM.$canvas)
+    animateGridOut(this.group, this.prevGrid, this.duration, () => this.isAnimating = false)
   }
 
   // ————————————————————————————————————————————————————————————————————————
@@ -309,12 +250,7 @@ export default class VideoProjection extends CanvasModel {
     // threshold: only react if the pointer is within a cube's distance (0.5)
     const bounds = this.gridBounds.get(this.currGrid)
     if (!bounds) return
-    if (
-      local.x < bounds.minX - CONFIG.elevationMargin ||
-      local.x > bounds.maxX + CONFIG.elevationMargin ||
-      local.y < bounds.minY - CONFIG.elevationMargin ||
-      local.y > bounds.maxY + CONFIG.elevationMargin
-    ) {
+    if (!isWithinBounds(local, bounds)) {
       if (this.hoverIdx) this.resetLastAffected()
       this.hoverIdx = null
       return
@@ -330,7 +266,7 @@ export default class VideoProjection extends CanvasModel {
     const lookup = this.meshLookupByGrid.get(this.currGrid)
     if (!lookup) return
 
-    const nearest = this.findNearestExisting(x, y, lookup, 4)
+    const nearest = findNearestExistingMesh(x, y, lookup, 4)
     if (!nearest) {
       if (this.hoverIdx) this.resetLastAffected()
       this.hoverIdx = null
@@ -353,49 +289,23 @@ export default class VideoProjection extends CanvasModel {
     if (!gridLookup) return
 
     const nextAffected = new Map<string, number>()
-    this.addRing(nextAffected, gridLookup, cx, cy, 0, this.elevation.self)
-    this.addRing(nextAffected, gridLookup, cx, cy, 1, this.elevation.ring1)
-    this.addRing(nextAffected, gridLookup, cx, cy, 2, this.elevation.ring2)
+    addRing(nextAffected, gridLookup, cx, cy, 0, this.elevation.self)
+    addRing(nextAffected, gridLookup, cx, cy, 1, this.elevation.ring1)
+    addRing(nextAffected, gridLookup, cx, cy, 2, this.elevation.ring2)
 
     for (const key of this.lastAffected) {
       if (!nextAffected.has(key)) {
         const m = gridLookup.get(key)
-        if (m) this.animateZ(m, (m.userData?.baseZ ?? 0))
+        if (m) animateZ(m, (m.userData?.baseZ ?? 0))
       }
     }
 
     for (const [key, z] of nextAffected) {
       const m = gridLookup.get(key)!
-      this.animateZ(m, (m.userData?.baseZ ?? 0) + z)
+      animateZ(m, (m.userData?.baseZ ?? 0) + z)
     }
 
     this.lastAffected = new Set(nextAffected.keys())
-  }
-
-  private addRing (
-    targets: Map<string, number>,
-    lookup: Map<string, Mesh>,
-    cx: number,
-    cy: number,
-    d: number,
-    z: number
-  ) {
-    if (d === 0) {
-      const k = this.key(cx, cy)
-      if (lookup.has(k)) targets.set(k, z)
-      return
-    }
-    for (let dx = -d; dx <= d; dx++) {
-      for (let dy = -d; dy <= d; dy++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== d) continue
-        const k = this.key(cx + dx, cy + dy)
-        if (lookup.has(k)) targets.set(k, z)
-      }
-    }
-  }
-
-  private animateZ (mesh: Mesh, z: number) {
-    gsap.to(mesh.position, { z, duration: 0.15, ease: 'power2.out', overwrite: true })
   }
 
   private resetLastAffected () {
@@ -403,28 +313,8 @@ export default class VideoProjection extends CanvasModel {
     if (!lookup) return
     for (const key of this.lastAffected) {
       const m = lookup.get(key)
-      if (m) this.animateZ(m, m.userData?.baseZ ?? 0)
+      if (m) animateZ(m, m.userData?.baseZ ?? 0)
     }
     this.lastAffected.clear()
-  }
-
-  // find nearest existing mesh index in lookup if mask removed the center tile
-  private findNearestExisting (
-    cx: number,
-    cy: number,
-    lookup: Map<string, Mesh>,
-    maxR = 3
-  ): { x:number, y:number } | null {
-    if (lookup.has(`${cx},${cy}`)) return { x: cx, y: cy }
-    for (let r = 1; r <= maxR; r++) {
-      for (let dx = -r; dx <= r; dx++) {
-        for (let dy = -r; dy <= r; dy++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue
-          const k = `${cx + dx},${cy + dy}`
-          if (lookup.has(k)) return { x: cx + dx, y: cy + dy }
-        }
-      }
-    }
-    return null
   }
 }

@@ -16,3 +16,10 @@ export interface ProjectionItem {
   mask: string,
   video: string
 }
+
+export interface Bounds {
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number
+}

@@ -87,26 +87,24 @@ export const animateGridIn = (
   duration: number,
   $canvas: HTMLCanvasElement
 ): void => {
-  const grid = group.children.find((item) => item.name === currGridName) as Group | undefined
+  const grid = group.children.find((item) => item.name === currGridName)
   $canvas.dataset.video = currGridName
   const tl = gsap.timeline({ delay: duration * 0.25, defaults: { ease: 'power1.out', duration: duration } })
 
-  for (const [index, child] of (grid?.children.entries() ?? [])) {
-    const mesh = child as Mesh
+  for (const [index, mesh] of (grid?.children.entries() ?? [])) {
     tl.to(mesh.scale, { x: 1, y: 1, z: 1, ease: 'power3.inOut' }, index * 0.001)
       .to(mesh.position, { z: 0 }, '<')
   }
 }
 
 export const animateGridOut = (group: Group, prevGridName: string, duration: number, onComplete: Function): void => {
-  const grid = group.children.find((item) => item.name === prevGridName) as Group | undefined
+  const grid = group.children.find((item) => item.name === prevGridName)
   const tl = gsap.timeline({
     defaults: { ease: 'power1.out', duration: duration },
     onComplete: () => onComplete()
   })
 
-  for (const [index, child] of (grid?.children.entries() ?? [])) {
-    const mesh = child as Mesh
+  for (const [index, mesh] of (grid?.children.entries() ?? [])) {
     tl.to(mesh.scale, { x: 0, y: 0, z: 0, ease: 'power3.inOut' }, index * 0.001)
       .to(mesh.position, {
         z: 6,

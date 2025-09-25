@@ -4,7 +4,7 @@ import {
 } from 'three'
 import gsap from 'gsap'
 import { CanvasApp, CanvasModel } from '.'
-import CONFIG from '@/modules/webgl/data/config'
+import { CONFIG } from '@/modules/webgl/data'
 import { ProjectionItem } from '@/modules/webgl/types'
 import { clamp } from '@/modules/common/utils'
 
@@ -230,7 +230,7 @@ export default class VideoProjection extends CanvasModel {
 
     const btn = document.createElement('button')
     btn.dataset.id = config.id
-    btn.textContent = config.id
+    btn.innerHTML = config.icon.trim()
     this.DOM.$buttons.appendChild(btn)
   }
 
@@ -394,50 +394,6 @@ export default class VideoProjection extends CanvasModel {
       if (m) this.animateZ(m, (m.userData?.baseZ ?? 0))
     }
     this.lastAffected.clear()
-  }
-
-  // ————————————————————————————————————————————————————————————————————————
-  // Public API
-  public update () {
-    super.update()
-  }
-
-  public setSpacing (s: number) {
-    CONFIG.spacing = s
-    const gapX = Math.max(CONFIG.spacing - CONFIG.cubeW, 0)
-    const gapY = Math.max(CONFIG.spacing - CONFIG.cubeH, 0)
-    const totalW = CONFIG.size * CONFIG.cubeW + (CONFIG.size - 1) * gapX
-    const totalH = CONFIG.size * CONFIG.cubeH + (CONFIG.size - 1) * gapY
-
-    for (const grid of this.group.children as Group[]) {
-      // update cached bounds for each grid id
-      this.computeGridBounds(grid.name)
-
-      for (const mesh of grid.children as Mesh[]) {
-        const { x, y } = mesh.userData as { x: number, y: number }
-        mesh.position.set(
-          (x - (CONFIG.size - 1) / 2) * CONFIG.spacing,
-          (y - (CONFIG.size - 1) / 2) * CONFIG.spacing,
-          mesh.position.z
-        )
-
-        // recompute UVs to keep gaps respected after spacing change
-        const startX = x * (CONFIG.cubeW + gapX)
-        const startY = y * (CONFIG.cubeH + gapY)
-        let uvX = startX / totalW
-        let uvY = startY / totalH
-        let uvWidth = CONFIG.cubeW / totalW
-        let uvHeight = CONFIG.cubeH / totalH
-
-        const uv = (mesh.geometry as BoxGeometry).attributes.uv
-        const arr = uv.array as Float32Array
-        for (let i = 0; i < arr.length; i += 2) {
-          arr[i]     = uvX + arr[i]     * uvWidth
-          arr[i + 1] = uvY + arr[i + 1] * uvHeight
-        }
-        uv.needsUpdate = true
-      }
-    }
   }
 
   // find nearest existing mesh index in lookup if mask removed the center tile

@@ -17,11 +17,13 @@ body > canvas {
     background: linear-gradient(90deg, #f7ea60, #3cf2de 54%, #f774bb);
   }
   
-  &[data-video="drop"] {
+  &[data-video="drop"],
+  &[data-video="yin-yang"] {
     background: linear-gradient(90deg, #8711c1, #2472fc);
   }
   
-  &[data-video="smile"] {
+  &[data-video="smile"],
+  &[data-video="lungs"] {
     background: linear-gradient(90deg, #1dbde6, #f1515e);
   }
 
@@ -31,15 +33,44 @@ body > canvas {
 }
 
 body > nav {
+  --size: 5rem;
   position: fixed;
   bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
   width: 100%;
 
   & > button {
-    
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: var(--size);
+    height: var(--size);
+    background-color: var(--c-background);
+    transition: transform 0.2s ease;
+    pointer-events: all;
+    cursor: pointer;
+
+    &:nth-child(odd) {
+      margin-bottom: calc(var(--size) * 0.75);
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+  
+  svg {
+    width: 65%;
+    pointer-events: none;
+    fill: #EEE;
   }
 }

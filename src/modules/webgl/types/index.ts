@@ -3,6 +3,7 @@ export interface ProjectionConfig {
   spacing: number,
   cubeW: number,
   cubeH: number,
+  cubeD: number,
   elevation: number,
   elevationStep: number,
   elevationMargin: number,

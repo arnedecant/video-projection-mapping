@@ -18,7 +18,8 @@ body > canvas {
   }
   
   &[data-video="drop"],
-  &[data-video="yin-yang"] {
+  &[data-video="home"],
+  &[data-video="yin-yang"], {
     background: linear-gradient(90deg, #8711c1, #2472fc);
   }
   

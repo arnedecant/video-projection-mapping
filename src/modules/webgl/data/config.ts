@@ -1,5 +1,7 @@
 import {
-  imgHeart, imgDrop, imgSmile, imgKiswe, imgLungs, vidConcert, vidCrowd, vidFuture, svgYinYang, svgLungs, svgHeart, imgYinYang
+  imgHeart, imgDrop, imgSmile, imgKiswe, imgLungs, vidConcert, vidCrowd, vidFuture, svgYinYang, svgLungs, svgHeart, imgYinYang,
+  imgHome,
+  svgHome
 } from './assets'
 import { ProjectionConfig } from '@/modules/webgl/types'
 
@@ -8,8 +10,9 @@ const CONFIG: ProjectionConfig = {
   spacing: 0.6,
   cubeW: 0.5,
   cubeH: 0.5,
+  cubeD: 0.25,
   elevation: 2,
-  elevationStep: 0.8,
+  elevationStep: 0.5,
   elevationMargin: 0.5, // margin between pointer <=> grid interaction
   items: [
     {
@@ -25,9 +28,9 @@ const CONFIG: ProjectionConfig = {
       video: vidCrowd
     },
     {
-      id: 'yin-yang',
-      icon: svgYinYang,
-      mask: imgYinYang,
+      id: 'home',
+      icon: svgHome,
+      mask: imgHome,
       video: vidFuture
     },
     // {

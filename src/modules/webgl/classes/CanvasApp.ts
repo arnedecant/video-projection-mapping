@@ -2,45 +2,45 @@ import { AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer
 import { OrbitControls } from '@three-ts/orbit-controls'
 import { CanvasModel } from '.'
 
+interface CanvasAppConfig {
+  cameraZ?: number
+}
+
 export default class CanvasApp {
+  private _rafId = 0
+  public $canvas: HTMLCanvasElement
   public models: CanvasModel[] = []
-  public canvas: HTMLCanvasElement
   public renderer: WebGLRenderer
   public scene: Scene
   public camera: PerspectiveCamera
   public controls: OrbitControls
   public pixelRatio = 1
-
   public lights = {
     ambient: new AmbientLight(0xffffff),
     directional: new DirectionalLight(0xffffff, 10)
   }
 
-  private _rafId = 0
-
-  constructor (selector: string = '#canvas') {
-    this.canvas = document.querySelector(selector) as HTMLCanvasElement
+  constructor (selector: string = '#canvas', config: CanvasAppConfig = {}) {
+    this.$canvas = document.querySelector(selector) as HTMLCanvasElement
+    if (!this.$canvas) throw Error(`Canvas ${selector} not found.`)
 
     // Renderer
-    this.renderer = new WebGLRenderer({
-      canvas: this.canvas,
-      alpha: true
-    })
+    this.renderer = new WebGLRenderer({ canvas: this.$canvas, alpha: true })
     this.renderer.setClearColor(0x000000, 0)
 
     // Initial size (will be corrected on first frame)
     this.pixelRatio = Math.min(window.devicePixelRatio ?? 1, 2)
-    const w = this.canvas.clientWidth ?? window.innerWidth
-    const h = this.canvas.clientHeight ?? window.innerHeight
+    const w = this.$canvas.clientWidth ?? window.innerWidth
+    const h = this.$canvas.clientHeight ?? window.innerHeight
     this.renderer.setPixelRatio(this.pixelRatio)
     this.renderer.setSize(w, h, false)
 
     // Scene / Camera / Controls
     this.scene = new Scene()
     this.camera = new PerspectiveCamera(35, w / h, 0.1, 100)
-    this.camera.position.z = 6
+    this.camera.position.z = config.cameraZ ?? 12
 
-    this.controls = new OrbitControls(this.camera, this.canvas)
+    this.controls = new OrbitControls(this.camera, this.$canvas)
     this.controls.enableDamping = true
 
     // Lights
@@ -49,7 +49,7 @@ export default class CanvasApp {
 
     // Start loop (no window 'resize' listener needed)
     this.loop = this.loop.bind(this)
-    this._rafId = requestAnimationFrame(this.loop)
+    this._rafId = requestAnimationFrame(this.loop.bind(this))
   }
 
   /** Resize only when the displayed size or DPR actually changed. */

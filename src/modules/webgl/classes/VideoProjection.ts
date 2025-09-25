@@ -51,7 +51,7 @@ export default class VideoProjection extends CanvasModel {
     this.elevation = {
       self: CONFIG.elevation,
       ring1: CONFIG.elevation * CONFIG.elevationStep,
-      ring2: CONFIG.elevation * Math.pow(CONFIG.elevationStep, 4)
+      ring2: CONFIG.elevation * Math.pow(CONFIG.elevationStep, 2)
     }
 
     for (const [index, config] of CONFIG.items.entries()) {
@@ -146,7 +146,7 @@ export default class VideoProjection extends CanvasModel {
         const brightness = (r + g + b) / 3
         if (brightness >= 128) continue
 
-        const geometry = new BoxGeometry(CONFIG.cubeW, CONFIG.cubeH, 0.5)
+        const geometry = new BoxGeometry(CONFIG.cubeW, CONFIG.cubeH, CONFIG.cubeD)
 
         // start position in world span that includes gaps
         const startX = x * (CONFIG.cubeW + gapX)

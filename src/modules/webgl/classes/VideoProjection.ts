@@ -1,15 +1,9 @@
-import {
-  BoxGeometry, ClampToEdgeWrapping, FrontSide, Group, LinearFilter, Mesh, MeshBasicMaterial, MeshStandardMaterial,
-  Raycaster, SRGBColorSpace, Vector2, Vector3, Matrix4, Ray, VideoTexture
-} from 'three'
-import gsap from 'gsap'
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Raycaster, Vector2, Vector3, Matrix4, Ray } from 'three'
 import { CanvasApp, CanvasModel } from '.'
 import { CONFIG } from '@/modules/webgl/data'
 import { Bounds, ProjectionItem } from '@/modules/webgl/types'
 import { clamp } from '@/modules/common/utils'
 import { addRing, animateGridIn, animateGridOut, animateZ, findNearestExistingMesh, getKey, getMaterialFromVideo, isWithinBounds } from '../utils'
-
-type ImageDataArray = Uint8ClampedArray
 
 export default class VideoProjection extends CanvasModel {
   private currGrid: string = 'heart'

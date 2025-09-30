@@ -1,7 +1,6 @@
 import {
-  imgHeart, imgDrop, imgSmile, imgKiswe, imgLungs, vidConcert, vidCrowd, vidFuture, svgYinYang, svgLungs, svgHeart, imgYinYang,
-  imgHome,
-  svgHome
+  imgHeart, imgDrop, imgSmile, imgKiswe, imgLungs, vidConcert, vidCrowd, vidFuture, svgYinYang, svgLungs, svgHeart,
+  imgYinYang, imgHome, svgHome, svgKiswe, vidKisweSizzle
 } from './assets'
 import { ProjectionConfig } from '@/modules/webgl/types'
 
@@ -35,6 +34,7 @@ const CONFIG: ProjectionConfig = {
     },
     // {
     //   id: 'kiswe',
+    //   icon: svgKiswe,
     //   mask: imgKiswe,
     //   video: vidKisweSizzle
     // }

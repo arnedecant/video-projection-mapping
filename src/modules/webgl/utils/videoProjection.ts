@@ -6,14 +6,17 @@ import { CONFIG } from '../data'
 
 export const getKey = (x: number, y: number) => getCommaSeparatedString(x, y)
 
-export const getMaterialFromVideo = (config: ProjectionItem): MeshBasicMaterial => {
-  const $video = document.createElement('video')
-  $video.src = config.video
-  $video.crossOrigin = 'anonymous'
-  $video.loop = true
-  $video.muted = true
-  $video.playsInline = true
-  $video.play()
+export const getMaterialFromVideo = (config: ProjectionItem, webcamVideo?: HTMLVideoElement): MeshBasicMaterial => {
+  const $video = webcamVideo || document.createElement('video')
+  
+  if (!webcamVideo) {
+    $video.src = config.video
+    $video.crossOrigin = 'anonymous'
+    $video.loop = true
+    $video.muted = true
+    $video.playsInline = true
+    $video.play()
+  }
 
   const videoTexture = new VideoTexture($video)
   videoTexture.minFilter = LinearFilter

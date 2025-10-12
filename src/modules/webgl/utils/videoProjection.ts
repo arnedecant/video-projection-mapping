@@ -33,10 +33,10 @@ export const animateZ = (mesh: Mesh, z: number): void => {
 }
 
 export const isWithinBounds = (local: Vector3, bounds: Bounds): boolean => {
-  return local.x >= bounds.minX - CONFIG.elevationMargin
-    && local.x <= bounds.maxX + CONFIG.elevationMargin
-    && local.y >= bounds.minY - CONFIG.elevationMargin
-    && local.y <= bounds.maxY + CONFIG.elevationMargin
+  return local.x >= bounds.minX - CONFIG.elevation.margin
+    && local.x <= bounds.maxX + CONFIG.elevation.margin
+    && local.y >= bounds.minY - CONFIG.elevation.margin
+    && local.y <= bounds.maxY + CONFIG.elevation.margin
 }
 
 export const findNearestExistingMesh = (

@@ -45,9 +45,9 @@ export default class VideoProjection extends CanvasModel {
     this.app.scene.add(this.group)
 
     this.elevation = {
-      self: CONFIG.elevation,
-      ring1: CONFIG.elevation * CONFIG.elevationStep,
-      ring2: CONFIG.elevation * Math.pow(CONFIG.elevationStep, 2)
+      self: CONFIG.elevation.self,
+      ring1: CONFIG.elevation.self * CONFIG.elevation.step,
+      ring2: CONFIG.elevation.self * Math.pow(CONFIG.elevation.step, 2)
     }
 
     for (const [index, config] of CONFIG.items.entries()) {
@@ -81,7 +81,7 @@ export default class VideoProjection extends CanvasModel {
 
   // recompute and cache local-space bounds for a grid id
   private computeGridBounds (gridId: string) {
-    const halfSpan = ((CONFIG.size - 1) / 2) * CONFIG.spacing
+    const halfSpan = ((CONFIG.grid.size - 1) / 2) * CONFIG.grid.spacing
     this.gridBounds.set(gridId, {
       minX: -halfSpan,
       maxX:  halfSpan,
@@ -96,19 +96,19 @@ export default class VideoProjection extends CanvasModel {
     this.material = getMaterialFromVideo(config)
     const gridGroup = new Group()
 
-    const gapX = Math.max(CONFIG.spacing - CONFIG.cubeW, 0)
-    const gapY = Math.max(CONFIG.spacing - CONFIG.cubeH, 0)
-    const totalW = CONFIG.size * CONFIG.cubeW + (CONFIG.size - 1) * gapX
-    const totalH = CONFIG.size * CONFIG.cubeH + (CONFIG.size - 1) * gapY
+    const gapX = Math.max(CONFIG.grid.spacing - CONFIG.cube.width, 0)
+    const gapY = Math.max(CONFIG.grid.spacing - CONFIG.cube.height, 0)
+    const totalW = CONFIG.grid.size * CONFIG.cube.width + (CONFIG.grid.size - 1) * gapX
+    const totalH = CONFIG.grid.size * CONFIG.cube.height + (CONFIG.grid.size - 1) * gapY
 
     const gridLookup = new Map<string, Mesh>()
     this.meshLookupByGrid.set(config.id, gridLookup)
 
-    for (let x = 0; x < CONFIG.size; x++) {
-      for (let y = 0; y < CONFIG.size; y++) {
+    for (let x = 0; x < CONFIG.grid.size; x++) {
+      for (let y = 0; y < CONFIG.grid.size; y++) {
         // mask sampling (map CONFIG.size grid → this.grid.{width,height})
-        const sx = Math.floor(x * (this.grid.width / CONFIG.size))
-        const sy = Math.floor(y * (this.grid.height / CONFIG.size))
+        const sx = Math.floor(x * (this.grid.width / CONFIG.grid.size))
+        const sy = Math.floor(y * (this.grid.height / CONFIG.grid.size))
         const flippedY = this.grid.height - 1 - sy
         const pixelIndex = (flippedY * this.grid.width + sx) * 4
         const r = this.imgData[pixelIndex]
@@ -117,17 +117,17 @@ export default class VideoProjection extends CanvasModel {
         const brightness = (r + g + b) / 3
         if (brightness >= 128) continue
 
-        const geometry = new BoxGeometry(CONFIG.cubeW, CONFIG.cubeH, CONFIG.cubeD)
+        const geometry = new BoxGeometry(CONFIG.cube.width, CONFIG.cube.height, CONFIG.cube.depth)
 
         // start position in world span that includes gaps
-        const startX = x * (CONFIG.cubeW + gapX)
-        const startY = y * (CONFIG.cubeH + gapY)
+        const startX = x * (CONFIG.cube.width + gapX)
+        const startY = y * (CONFIG.cube.height + gapY)
 
         // normalized UV rectangle for this cube
         const uvX = startX / totalW
         const uvY = startY / totalH
-        const uvWidth = CONFIG.cubeW / totalW
-        const uvHeight = CONFIG.cubeH / totalH
+        const uvWidth = CONFIG.cube.width / totalW
+        const uvHeight = CONFIG.cube.height / totalH
 
         const uvAttribute = geometry.attributes.uv
         const a = uvAttribute.array as Float32Array
@@ -138,8 +138,8 @@ export default class VideoProjection extends CanvasModel {
         uvAttribute.needsUpdate = true
 
         const mesh = new Mesh(geometry, this.material)
-        mesh.position.x = (x - (CONFIG.size - 1) / 2) * CONFIG.spacing
-        mesh.position.y = (y - (CONFIG.size - 1) / 2) * CONFIG.spacing
+        mesh.position.x = (x - (CONFIG.grid.size - 1) / 2) * CONFIG.grid.spacing
+        mesh.position.y = (y - (CONFIG.grid.size - 1) / 2) * CONFIG.grid.spacing
         mesh.position.z = 0
         mesh.userData = { x, y, baseZ: 0 }
 
@@ -174,11 +174,11 @@ export default class VideoProjection extends CanvasModel {
       const aspectRatio = originalWidth / originalHeight
 
       this.grid.width = aspectRatio > 1
-        ? CONFIG.size
-        : Math.round(CONFIG.size * aspectRatio)
+        ? CONFIG.grid.size
+        : Math.round(CONFIG.grid.size * aspectRatio)
       this.grid.height = aspectRatio > 1
-        ? Math.round(CONFIG.size * aspectRatio)
-        : CONFIG.size
+        ? Math.round(CONFIG.grid.size * aspectRatio)
+        : CONFIG.grid.size
 
       canvas.width = this.grid.width
       canvas.height = this.grid.height
@@ -250,8 +250,8 @@ export default class VideoProjection extends CanvasModel {
       return
     }
 
-    const N = CONFIG.size
-    const S = CONFIG.spacing
+    const N = CONFIG.grid.size
+    const S = CONFIG.grid.spacing
     const ix = Math.round(local.x / S + (N - 1) / 2)
     const iy = Math.round(local.y / S + (N - 1) / 2)
     const x = clamp(ix, 0, N - 1)

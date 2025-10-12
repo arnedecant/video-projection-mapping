@@ -16,7 +16,7 @@ export default class VideoProjection extends CanvasModel {
     $body: document.querySelector('body') as HTMLBodyElement,
     $buttons: document.querySelector('nav.buttons') as HTMLElement,
     $canvas: document.querySelector('#canvas') as HTMLCanvasElement,
-    $webcamCheckbox: document.querySelector('#webcam') as HTMLInputElement
+    $chkWebcam: document.querySelector('#webcam') as HTMLInputElement
   }
   private grid: Record<string, number> = { width: 0, height: 0 }
   public group: Group = new Group()
@@ -60,7 +60,7 @@ export default class VideoProjection extends CanvasModel {
     this.DOM.$buttons.addEventListener('click', this.onClick.bind(this))
     this.DOM.$canvas.addEventListener('mousemove', this.onPointerMove.bind(this))
     this.DOM.$canvas.addEventListener('mouseleave', this.onPointerLeave.bind(this))
-    this.DOM.$webcamCheckbox.addEventListener('change', this.onWebcamToggle.bind(this))
+    this.DOM.$chkWebcam.addEventListener('change', this.onWebcamToggle.bind(this))
   }
 
   // ————————————————————————————————————————————————————————————————————————
@@ -96,7 +96,8 @@ export default class VideoProjection extends CanvasModel {
   // ————————————————————————————————————————————————————————————————————————
   // Grid creation with UVs that include gaps
   private createGrid (config: ProjectionItem, index: number): void {
-    this.material = getMaterialFromVideo(config, this.DOM.$webcamCheckbox.checked ? UserMediaManager.$video : undefined)
+    const $video = this.DOM.$chkWebcam.checked ? UserMediaManager.$video : undefined
+    this.material = getMaterialFromVideo(config, $video)
     const gridGroup = new Group()
 
     const gapX = Math.max(CONFIG.grid.spacing - CONFIG.cube.width, 0)
@@ -318,20 +319,17 @@ export default class VideoProjection extends CanvasModel {
   // ————————————————————————————————————————————————————————————————————————
   // Webcam toggle functionality
   private async onWebcamToggle () {
-    if (this.DOM.$webcamCheckbox.checked) {
+    if (this.DOM.$chkWebcam.checked) {
       try {
-        await UserMediaManager.init()
+        await UserMediaManager.start()
         this.updateAllGridMaterials()
       } catch (error) {
         console.error('Failed to initialize webcam:', error)
-        this.DOM.$webcamCheckbox.checked = false
+        this.DOM.$chkWebcam.checked = false
       }
     } else {
       // Stop webcam stream
-      if (UserMediaManager.stream) {
-        UserMediaManager.stream.getTracks().forEach(track => track.stop())
-        UserMediaManager.stream = null
-      }
+      UserMediaManager.stop()
       this.updateAllGridMaterials()
     }
   }
@@ -339,23 +337,20 @@ export default class VideoProjection extends CanvasModel {
   private updateAllGridMaterials () {
     for (const grid of this.group.children) {
       const gridId = grid.name
-      const config = CONFIG.items.find(item => item.id === gridId)
+      const config = CONFIG.items.find((item) => item.id === gridId)
       if (!config) continue
 
-      const newMaterial = getMaterialFromVideo(config, this.DOM.$webcamCheckbox.checked ? UserMediaManager.$video : undefined)
-      
-      // Update all meshes in this grid
-      grid.children.forEach(mesh => {
-        if (mesh instanceof Mesh) {
-          // Dispose old material
-          if (mesh.material instanceof MeshBasicMaterial) {
-            mesh.material.map?.dispose()
-            mesh.material.dispose()
-          }
-          // Assign new material
-          mesh.material = newMaterial
+      const $video = this.DOM.$chkWebcam.checked ? UserMediaManager.$video : undefined
+      this.material = getMaterialFromVideo(config, $video)
+
+      for (const mesh of grid.children) {
+        if (!(mesh instanceof Mesh)) continue
+        if (mesh.material instanceof MeshBasicMaterial) {
+          mesh.material.map?.dispose()
+          mesh.material.dispose()
         }
-      })
+        mesh.material = this.material
+      }
     }
   }
 }

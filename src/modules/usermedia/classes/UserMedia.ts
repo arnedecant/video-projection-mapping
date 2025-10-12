@@ -7,10 +7,16 @@ class _UserMediaManager {
     this.setup()
   }
 
-  public async init () {
+  public async start () {
     this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
     this.$video.srcObject = this.stream
     this.$video.play()
+  }
+
+  public stop () {
+    if (!this.stream) return
+    this.stream.getTracks().forEach((track) => track.stop())
+    this.stream = null
   }
 
   private setup () {

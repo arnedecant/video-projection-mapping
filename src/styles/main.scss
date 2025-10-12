@@ -47,6 +47,7 @@ body[data-id="kiswe"] > canvas {
 
 body > nav {
   --size: 4rem;
+  --base-offset: calc(var(--size) * 0.75);
   position: fixed;
   bottom: 1rem;
   display: flex;
@@ -69,7 +70,7 @@ body > nav {
     cursor: pointer;
 
     &:nth-child(odd) {
-      margin-bottom: calc(var(--size) * 0.75);
+      margin-bottom: var(--base-offset);
     }
 
     &:hover {

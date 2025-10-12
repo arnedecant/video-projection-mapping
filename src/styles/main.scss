@@ -9,6 +9,9 @@ body {
   height: 100dvh;
   width: 100dvw;
   position: relative;
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.5;
+  color: var(--c-text);
 
   &::after {
     content: '';
@@ -87,4 +90,56 @@ body > nav {
     pointer-events: none;
     fill: var(--c-background);
   }
+}
+
+body > aside {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: monospace;
+}
+
+input[type="checkbox"] {
+  all: unset;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 2px solid var(--c-background);
+  background-color: var(--c-background);
+  cursor: pointer;
+  position: relative;
+
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0.1rem;
+    left: 0.25rem;
+    width: 0.4rem;
+    height: 0.7rem;
+    border: solid var(--c-text);
+    border-width: 0 0.2rem 0.2rem 0;
+    opacity: 0;
+    transform: rotate(45deg) scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  &:checked::after {
+    opacity: 1;
+  }
+}
+
+label {
+  font-size: 0.875rem;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.08em;
 }

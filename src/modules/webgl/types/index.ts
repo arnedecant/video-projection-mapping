@@ -1,12 +1,18 @@
 export interface ProjectionConfig {
-  size: number,
-  spacing: number,
-  cubeW: number,
-  cubeH: number,
-  cubeD: number,
-  elevation: number,
-  elevationStep: number,
-  elevationMargin: number,
+  grid: {
+    size: number,
+    spacing: number
+  },
+  cube: {
+    width: number,
+    height: number,
+    depth: number
+  },
+  elevation: {
+    self: number,
+    step: number,
+    margin: number
+  },
   items: ProjectionItem[]
 }
 
